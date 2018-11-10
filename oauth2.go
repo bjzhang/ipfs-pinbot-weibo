@@ -46,7 +46,7 @@ var (
 var oauthCfg = &oauth2.Config{
 	ClientID:     "20479142",
 	ClientSecret: "1fa5bdfd1a901a885c3ec9d1aceef701",
-	RedirectURL:  "http://127.0.0.1:8080/oauth2callback",
+	RedirectURL:  "http://107.150.126.172/oauth2callback",
 	Endpoint: oauth2.Endpoint{
 		AuthURL:  "https://api.weibo.com/oauth2/authorize",
 		TokenURL: "https://api.weibo.com/oauth2/access_token",
@@ -55,7 +55,7 @@ var oauthCfg = &oauth2.Config{
 }
 
 const profileInfoURL = "https://api.weibo.com/2/users/show.json"
-const port = ":8080"
+const port = ":80"
 
 func main() {
 	http.HandleFunc("/", handleRoot)
@@ -65,7 +65,10 @@ func main() {
 	http.HandleFunc("/getuserinfo", getUserInfo)
 
 	log.Println("Listen On" + port)
-	http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
