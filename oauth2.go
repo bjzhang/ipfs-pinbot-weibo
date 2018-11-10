@@ -9,7 +9,7 @@
 package main
 
 import (
-	"code.google.com/p/goauth2/oauth"
+	"golang.org/x/oauth2"
 	//"crypto/tls"
 	"fmt"
 	"io/ioutil"
@@ -43,13 +43,15 @@ var (
 	token = ""
 )
 
-var oauthCfg = &oauth.Config{
-	ClientId:     "20479142",
+var oauthCfg = &oauth2.Config{
+	ClientID:     "20479142",
 	ClientSecret: "1fa5bdfd1a901a885c3ec9d1aceef701",
-	AuthURL:      "https://api.weibo.com/oauth2/authorize",
-	TokenURL:     "https://api.weibo.com/oauth2/access_token",
 	RedirectURL:  "http://127.0.0.1:8080/oauth2callback",
-	Scope:        "",
+	Endpoint: oauth2.Endpoint{
+		AuthURL:  "https://api.weibo.com/oauth2/authorize",
+		TokenURL: "https://api.weibo.com/oauth2/access_token",
+	},
+	Scopes: []string{},
 }
 
 const profileInfoURL = "https://api.weibo.com/2/users/show.json"
@@ -59,7 +61,7 @@ func main() {
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/authorize", handleAuthorize)
 
-	http.HandleFunc("/oauth2callback", handleOAuth2Callback)
+	//	http.HandleFunc("/oauth2callback", handleOAuth2Callback)
 	http.HandleFunc("/getuserinfo", getUserInfo)
 
 	log.Println("Listen On" + port)
@@ -80,37 +82,37 @@ func handleAuthorize(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusFound)
 }
 
-// Function that handles the callback from the Google server
-func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
-	//Get the code from the response
-	code := r.FormValue("code")
-
-	t := &oauth.Transport{oauth.Config: oauthCfg}
-
-	// Exchange the received code for a token
-	tok, _ := t.Exchange(code)
-
-	{
-		tokenCache := oauth.CacheFile("./request.token")
-
-		err := tokenCache.PutToken(tok)
-		if err != nil {
-			log.Fatal("Cache write:", err)
-		}
-		log.Printf("Token is cached in %v\n", tokenCache)
-		token = tok.AccessToken
-	}
-
-	/*
-	   // Skip TLS Verify
-	   t.Transport = &http.Transport{
-	       TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	   }
-	*/
-
-	userInfoTemplate.Execute(w, nil)
-
-}
+//// Function that handles the callback from the Google server
+//func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
+//	//Get the code from the response
+//	code := r.FormValue("code")
+//
+//	t := &oauth2.Transport{oauth2.Config: oauthCfg}
+//
+//	// Exchange the received code for a token
+//	tok, _ := t.Exchange(code)
+//
+//	{
+//		tokenCache := oauth2.CacheFile("./request.token")
+//
+//		err := tokenCache.PutToken(tok)
+//		if err != nil {
+//			log.Fatal("Cache write:", err)
+//		}
+//		log.Printf("Token is cached in %v\n", tokenCache)
+//		token = tok.AccessToken
+//	}
+//
+//	/*
+//	   // Skip TLS Verify
+//	   t.Transport = &http.Transport{
+//	       TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+//	   }
+//	*/
+//
+//	userInfoTemplate.Execute(w, nil)
+//
+//}
 
 // Get Sina User Info
 func getUserInfo(w http.ResponseWriter, r *http.Request) {
